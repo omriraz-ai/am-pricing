@@ -5,7 +5,7 @@ from db_models import Base
 from seed_data import seed_database
 from api.routes import projects, pricing, approval, proposal, reference
 from api.routes import import_project
-from fastapi.middleware.cors import CORSMiddleware
+
 
 # יצירת טבלאות
 Base.metadata.create_all(bind=engine)
@@ -29,18 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # רישום routes
 app.include_router(projects.router, prefix="/api/v1")
