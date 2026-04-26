@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
-
 export const metadata: Metadata = {
   title: "AM הנדסה — מערכת הצעות מחיר",
   description: "מערכת אוטומטית לחישוב תמחור ויצירת הצעות מחיר לפרויקטי בנייה",
