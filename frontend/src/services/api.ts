@@ -1,5 +1,5 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
-
+const BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://am-pricing.onrender.com/api/v1";
 async function req<T>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
