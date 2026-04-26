@@ -5,6 +5,7 @@ from db_models import Base
 from seed_data import seed_database
 from api.routes import projects, pricing, approval, proposal, reference
 from api.routes import import_project
+from fastapi.middleware.cors import CORSMiddleware
 
 # יצירת טבלאות
 Base.metadata.create_all(bind=engine)
@@ -16,7 +17,17 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://am-pricing.vercel.app",
+        "https://am-pricing-ddy5qf0vp-omri-razs-projects.vercel.app",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.add_middleware(
     CORSMiddleware,
