@@ -404,6 +404,51 @@ const handleImportPreview = async () => {
               {/* לוח זמנים */}
               <div className="card">
                 <h2 className="section-title">לוח זמנים</h2>
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 12,
+    marginBottom: 16,
+  }}
+>
+  <div className="stat-card">
+    <div style={{ fontSize: 12, color: "#6b7280" }}>
+      תכנון ורישוי
+    </div>
+
+    <div style={{ fontSize: 22, fontWeight: 700 }}>
+      {calc.schedule.planning} חודשים
+    </div>
+  </div>
+
+  <div className="stat-card">
+    <div style={{ fontSize: 12, color: "#6b7280" }}>
+      ביצוע
+    </div>
+
+    <div style={{ fontSize: 22, fontWeight: 700 }}>
+      {
+        calc.schedule.excavation +
+        calc.schedule.underground +
+        calc.schedule.above_ground +
+        calc.schedule.finishes +
+        calc.schedule.handover
+      } חודשים
+    </div>
+  </div>
+
+  <div className="stat-card">
+    <div style={{ fontSize: 12, color: "#6b7280" }}>
+      סה"כ
+    </div>
+
+    <div style={{ fontSize: 22, fontWeight: 700 }}>
+      {calc.schedule.total_months} חודשים
+    </div>
+  </div>
+</div>
                 <table>
                   <thead><tr><th>שלב</th><th>חודשים</th></tr></thead>
                   <tbody>
