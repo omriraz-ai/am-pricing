@@ -81,7 +81,11 @@ const handleFilePreview = async () => {
   const isPdf = importFile.name.toLowerCase().endsWith(".pdf");
   const endpoint = isPdf ? "pdf-preview" : "excel-preview";
 
-  const res = await fetch(`http://127.0.0.1:8000/api/v1/import/${endpoint}`, {
+  const apiBase =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://127.0.0.1:8000/api/v1";
+
+const res = await fetch(`${apiBase}/import/${endpoint}`, {
     method: "POST",
     body: formData,
   });
@@ -113,7 +117,7 @@ const handleFilePreview = async () => {
 
     {/* 👇 card של Import */}
     <div className="card" style={{ marginBottom: 16 }}>
-      <h2 className="section-title">ייבוא מאקסל</h2>
+      <h2 className="section-title">ייבוא Excel / PDF</h2>
 
       <input
         type="file"
@@ -122,12 +126,13 @@ const handleFilePreview = async () => {
       />
 
       <button
-  type="button"
   className="btn btn-primary"
+  type="button"
   onClick={handleFilePreview}
-  disabled={importLoading}
+  disabled={importLoading || !importFile}
+  style={{ marginRight: 8 }}
 >
-  {importLoading ? "טוען..." : "בדוק קובץ"}
+  {importLoading ? "מייבא..." : "בדוק קובץ"}
 </button>
     </div>
   {importMessage && (
