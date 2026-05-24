@@ -334,6 +334,75 @@ TEXT:
             "area": None,
             "raw_ai_response": raw,
         }
+def _normalize_ai_fields(data):
+    return {
+        "project_name": data.get("project_name"),
+        "client_name": data.get("client_name"),
+        "city": data.get("city"),
+        "units": data.get("units"),
+        "floors": data.get("floors"),
+        "area": data.get("area"),
+    }
+
+
+def extract_project_fields_with_openai(text: str):
+    from openai import OpenAI
+
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    prompt = f"""
+Extract project data from the following text.
+
+Return ONLY valid JSON, without markdown, without explanation.
+
+Use these exact keys:
+project_name, client_name, city, units, floors, area
+
+Rules:
+- If a value is missing, use null
+- units, floors, area must be numbers or null
+- Text may be Hebrew or English
+- project_name can be the project name after the word פרויקט
+- client_name can be the name after לכבוד
+- city can be a city name mentioned near the project name
+
+TEXT:
+{text[:6000]}
+"""
+
+    response = client.chat.completions.create(
+        model=model,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": "You extract construction project data and return JSON only."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+
+    raw = response.choices[0].message.content or "{}"
+
+    try:
+        return _normalize_ai_fields(json.loads(raw))
+    except Exception:
+        return {
+            "project_name": None,
+            "client_name": None,
+            "city": None,
+            "units": None,
+            "floors": None,
+            "area": None,
+            "raw_ai_response": raw,
+        }
+
+
+def extract_project_fields(text: str):
+    provider = os.getenv("AI_PROVIDER", "gemini").lower()
+
+    if provider == "openai":
+        return extract_project_fields_with_openai(text)
+
+    return extract_project_fields_with_gemini(text)
 def extract_units_from_text(text: str):
     patterns = [
         r"(\d+)\s*(יח\"ד|יח״ד)",
@@ -361,7 +430,7 @@ async def pdf_preview(file: UploadFile = File(...)):
             text += page.extract_text() or ""
 
         try:
-            detected_fields = extract_project_fields_with_gemini(text)
+            detected_fields = extract_project_fields(text)
         except Exception:
             detected_fields = {
                 "project_name": None,
@@ -409,4 +478,4 @@ async def pdf_preview(file: UploadFile = File(...)):
         return {
             "status": "error",
             "message": str(e),
-        }
+            }    
