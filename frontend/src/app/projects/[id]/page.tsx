@@ -200,7 +200,14 @@ const handleImportPreview = async () => {
   const formData = new FormData();
   formData.append("file", importFile);
 
-  const res = await fetch("http://127.0.0.1:8000/api/v1/import/excel-preview", {
+  const isPdf = importFile.name.toLowerCase().endsWith(".pdf");
+  const endpoint = isPdf ? "pdf-preview" : "excel-preview";
+
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://127.0.0.1:8000/api/v1";
+
+  const res = await fetch(`${apiBase}/import/${endpoint}`, {
     method: "POST",
     body: formData,
   });
