@@ -20,12 +20,23 @@ from utils.template_blocks import (
 from utils.helpers import format_currency, format_currency_per_unit
 
 
-def _set_rtl(paragraph):
-    """הגדרת RTL לפסקה."""
-    pPr = paragraph._p.get_or_add_pPr()
-    bidi = OxmlElement('w:bidi')
-    pPr.append(bidi)
+def _set_rtl(paragraph) -> None:
     paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    paragraph.paragraph_format.right_to_left = True
+
+    pPr = paragraph._p.get_or_add_pPr()
+
+    bidi = OxmlElement('w:bidi')
+    bidi.set(qn('w:val'), '1')
+
+    jc = OxmlElement('w:jc')
+    jc.set(qn('w:val'), 'right')
+
+    if pPr.find(qn('w:bidi')) is None:
+        pPr.append(bidi)
+
+    if pPr.find(qn('w:jc')) is None:
+        pPr.append(jc)
 
 
 def _add_rtl_paragraph(doc: Document, text: str, bold: bool = False, size: int = 11) -> None:
@@ -35,6 +46,10 @@ def _add_rtl_paragraph(doc: Document, text: str, bold: bool = False, size: int =
     run.bold = bold
     run.font.size = Pt(size)
     run.font.name = "David"
+    # סימון ה-run עצמו כ-RTL (קריטי למילים מעורבות עברית/מספרים)
+    rPr = run._element.get_or_add_rPr()
+    rtl = OxmlElement('w:rtl')
+    rPr.append(rtl)
 
 
 def _add_section_title(doc: Document, title: str) -> None:
@@ -45,27 +60,53 @@ def _add_section_title(doc: Document, title: str) -> None:
     run.font.size = Pt(13)
     run.font.color.rgb = RGBColor(0x1F, 0x38, 0x64)
     run.font.name = "David"
+    # סימון ה-run כ-RTL
+    rPr = run._element.get_or_add_rPr()
+    rtl = OxmlElement('w:rtl')
+    rPr.append(rtl)
 
 
 def _add_table_rtl(doc: Document, headers: List[str], rows: List[List[str]]) -> None:
     table = doc.add_table(rows=1 + len(rows), cols=len(headers))
     table.style = "Table Grid"
 
-    # כותרת
+    # bidiVisual ברמת הטבלה — Word יציג את העמודות מימין לשמאל
+    tblPr = table._element.find(qn('w:tblPr'))
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        table._element.insert(0, tblPr)
+    bidiVisual = OxmlElement('w:bidiVisual')
+    tblPr.append(bidiVisual)
+
+    # כותרת — סדר טבעי, בלי reversed
     hdr_row = table.rows[0]
-    for i, header in enumerate(reversed(headers)):
+    for i, header in enumerate(headers):
         cell = hdr_row.cells[i]
         cell.text = header
-        cell.paragraphs[0].runs[0].bold = True
-        cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        para = cell.paragraphs[0]
+        _set_rtl(para)
+        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = para.runs[0]
+        run.bold = True
+        run.font.name = "David"
+        rPr = run._element.get_or_add_rPr()
+        rPr.append(OxmlElement('w:rtl'))
 
-    # שורות
+    # שורות — סדר טבעי, בלי reversed
     for r_idx, row_data in enumerate(rows):
         row = table.rows[r_idx + 1]
-        for c_idx, val in enumerate(reversed(row_data)):
+        for c_idx, val in enumerate(row_data):
             cell = row.cells[c_idx]
             cell.text = str(val)
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            para = cell.paragraphs[0]
+            _set_rtl(para)
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            if para.runs:
+                run = para.runs[0]
+                run.font.name = "David"
+                rPr = run._element.get_or_add_rPr()
+                rPr.append(OxmlElement('w:rtl'))
+
 
 
 def generate_proposal_docx(
@@ -83,6 +124,25 @@ def generate_proposal_docx(
     section = doc.sections[0]
     section.right_margin = Cm(2)
     section.left_margin = Cm(2)
+
+    # RTL ברמת ה-section (כיוון טקסט מימין לשמאל למסמך כולו)
+    sectPr = section._sectPr
+    bidi = OxmlElement('w:bidi')
+    sectPr.append(bidi)
+
+    # סגנון Normal — RTL + גופן David ברירת מחדל
+    normal_style = doc.styles['Normal']
+    normal_style.font.name = 'David'
+    normal_style.font.size = Pt(11)
+    normal_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    # ברמת ה-rPr של הסגנון — סימון rtl
+    rpr = normal_style.element.get_or_add_rPr()
+    rtl = OxmlElement('w:rtl')
+    rpr.append(rtl)
+    # ברמת ה-pPr של הסגנון — bidi
+    ppr = normal_style.element.get_or_add_pPr()
+    ppr_bidi = OxmlElement('w:bidi')
+    ppr.append(ppr_bidi)
 
     today = date.today().strftime("%d/%m/%Y")
     phase_costs = calc_result.get("phase_costs", [])
