@@ -133,9 +133,19 @@ export default function ProjectDetailPage() {
   };
 
   // ── render ──────────────────────────────────────────
-  if (loading) return (
-    <div className="container" style={{ textAlign: "center", paddingTop: 80 }}>
-      <span className="spinner" />
+    if (loading) return (
+    <div className="container" style={{ paddingTop: 64 }}>
+      <div className="card" style={{ textAlign: "center", padding: 32 }}>
+        <span className="spinner" />
+
+        <h2 style={{ marginTop: 18, marginBottom: 8 }}>
+          טוען פרויקט...
+        </h2>
+
+        <p style={{ color: "#6b7280", fontSize: 14 }}>
+          אנחנו טוענים את נתוני הפרויקט, החישוב ולוח הזמנים
+        </p>
+      </div>
     </div>
   );
   if (!project) return (
