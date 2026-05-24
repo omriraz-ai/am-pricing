@@ -69,16 +69,16 @@ const applyRowToForm = (row: any) => {
   }));
 };
 
-const handleFilePreview = async () => {
-  if (!importFile) return;
+const handleFilePreview = async (fileToPreview = importFile) => {
+  if (!fileToPreview) return;
 
   setImportLoading(true);
   setImportMessage("");
 
   const formData = new FormData();
-  formData.append("file", importFile);
+  formData.append("file", fileToPreview);
 
-  const isPdf = importFile.name.toLowerCase().endsWith(".pdf");
+  const isPdf = fileToPreview.name.toLowerCase().endsWith(".pdf");
   const endpoint = isPdf ? "pdf-preview" : "excel-preview";
 
   const apiBase =
@@ -119,21 +119,40 @@ const res = await fetch(`${apiBase}/import/${endpoint}`, {
     <div className="card" style={{ marginBottom: 16 }}>
       <h2 className="section-title">ייבוא Excel / PDF</h2>
 
-      <input
-        type="file"
-        accept=".xlsx,.pdf"
-        onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-      />
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 12 }}>
+  <>
+  <input
+    id="project-import-file"
+    type="file"
+    accept=".xlsx,.pdf"
+    style={{ display: "none" }}
+    onChange={async (e) => {
+      const file = e.target.files?.[0] || null;
 
-      <button
-  className="btn btn-primary"
-  type="button"
-  onClick={handleFilePreview}
-  disabled={importLoading || !importFile}
-  style={{ marginRight: 8 }}
->
-  {importLoading ? "מייבא..." : "בדוק קובץ"}
-</button>
+      setImportFile(file);
+      setImportPreview(null);
+      setImportMessage("");
+
+      if (file) {
+        await handleFilePreview(file);
+      }
+    }}
+  />
+
+  <label
+    htmlFor="project-import-file"
+    className="btn btn-primary"
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      cursor: "pointer",
+    }}
+  >
+    {importLoading ? "בודק קובץ..." : "בדוק קובץ Excel / PDF"}
+  </label>
+</>
+
+</div>
     </div>
   {importMessage && (
   <div className="alert alert-success" style={{ marginBottom: 16 }}>
