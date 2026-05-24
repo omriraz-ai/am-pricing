@@ -405,90 +405,74 @@ const handleImportPreview = async () => {
               <div className="card">
                 <h2 className="section-title">לוח זמנים</h2>
 
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: 12,
-    marginBottom: 16,
-  }}
->
-  <div className="stat-card">
-    <div style={{ fontSize: 12, color: "#6b7280" }}>
-      תכנון ורישוי
-    </div>
 
-    <div style={{ fontSize: 22, fontWeight: 700 }}>
-      {calc.schedule.planning} חודשים
-    </div>
-  </div>
+                <div style={{ marginBottom: 24 }}>
+  <h3 style={{ marginBottom: 10 }}>תכנון ורישוי</h3>
 
-  <div className="stat-card">
-    <div style={{ fontSize: 12, color: "#6b7280" }}>
-      ביצוע
-    </div>
+  <table>
+    <thead>
+      <tr>
+        <th>שלב</th>
+        <th>חודשים</th>
+      </tr>
+    </thead>
 
-    <div style={{ fontSize: 22, fontWeight: 700 }}>
-      {
-        calc.schedule.excavation +
-        calc.schedule.underground +
-        calc.schedule.above_ground +
-        calc.schedule.finishes +
-        calc.schedule.handover
-      } חודשים
-    </div>
-  </div>
+    <tbody>
+      <tr>
+        <td>תכנון ורישוי</td>
+        <td>{calc.schedule.planning}</td>
+      </tr>
 
-  <div className="stat-card">
-    <div style={{ fontSize: 12, color: "#6b7280" }}>
-      סה"כ
-    </div>
-
-    <div style={{ fontSize: 22, fontWeight: 700 }}>
-      {calc.schedule.total_months} חודשים
-    </div>
-  </div>
+      <tr style={{ fontWeight: 700, background: "#f8faff" }}>
+        <td>סה"כ</td>
+        <td>{calc.schedule.planning} חודשים</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
-                <table>
-                  <thead><tr><th>שלב</th><th>חודשים</th></tr></thead>
-                  <tbody>
-                    {[
-                      ["תכנון ורישוי",     calc.schedule.planning],
-                      ["חפירה ודיפון",     calc.schedule.excavation],
-                      ["שלד תת\"ק",        calc.schedule.underground],
-                      ["שלד עילי",         calc.schedule.above_ground],
-                      ["גמרים / מעטפת",   calc.schedule.finishes],
-                      ["מסירות / טופס 4", calc.schedule.handover],
-                    ].map(([name, months]) => (
-                      <tr key={String(name)}><td>{name}</td><td>{months}</td></tr>
-                    ))}
-                    <tr style={{ fontWeight: 700, background: "#f8faff" }}>
-                      <td>סה"כ</td><td>{calc.schedule.total_months} חודשים</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>{calc.schedule.source_note}</p>
-              </div>
 
-              {/* תמחור לפי שלב */}
-              <div className="card">
-                <h2 className="section-title">תמחור לפי שלבים</h2>
-                <table>
-                  <thead>
-                    <tr><th>שלב</th><th>חודשים</th><th>תעריף חודשי</th><th>עלות שלב</th></tr>
-                  </thead>
-                  <tbody>
-                    {calc.phase_costs.map((pc) => (
-                      <tr key={pc.phase_name}>
-                        <td>{pc.phase_name}</td>
-                        <td>{pc.months}</td>
-                        <td>{fmtILS(pc.adjusted_rate)}</td>
-                        <td style={{ fontWeight: 600 }}>{fmtILS(pc.phase_total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+<div>
+  <h3 style={{ marginBottom: 10 }}>ביצוע</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>שלב</th>
+        <th>חודשים</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {[
+        ["חפירה ודיפון", calc.schedule.excavation],
+        ["שלד תת\"ק", calc.schedule.underground],
+        ["שלד עילי", calc.schedule.above_ground],
+        ["גמרים / מעטפת", calc.schedule.finishes],
+        ["מסירות / טופס 4", calc.schedule.handover],
+      ].map(([name, months]) => (
+        <tr key={String(name)}>
+          <td>{name}</td>
+          <td>{months}</td>
+        </tr>
+      ))}
+
+      <tr style={{ fontWeight: 700, background: "#f8faff" }}>
+        <td>סה"כ</td>
+
+        <td>
+          {
+            calc.schedule.excavation +
+            calc.schedule.underground +
+            calc.schedule.above_ground +
+            calc.schedule.finishes +
+            calc.schedule.handover
+          } חודשים
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
 
               {/* פרויקטים דומים */}
               {calc.comparable_projects.length > 0 && (
