@@ -1,5 +1,9 @@
-from fastapi import FastAPI
+import hmac
+import os
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from database import engine, SessionLocal
 from db_models import Base
 from seed_data import seed_database
@@ -28,6 +32,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Internal-service authentication ──────────────────────────────────────────
+# כל בקשה חייבת X-Internal-Service-Token הזהה ל-INTERNAL_SERVICE_TOKEN מה-env
+# (ללא fallback). מוחרג: /health בלבד — גם /docs ו-/ נחסמים בכוונה.
+# חסר token ב-env → fail-closed: 503 לכל בקשה לא-מוחרגת.
+EXEMPT_PATHS = {"/health"}
+
+
+@app.middleware("http")
+async def internal_service_auth(request: Request, call_next):
+    if request.url.path in EXEMPT_PATHS:
+        return await call_next(request)
+    expected = os.getenv("INTERNAL_SERVICE_TOKEN")
+    if not expected:
+        return JSONResponse(status_code=503, content={
+            "detail": "SERVER_MISCONFIGURED: INTERNAL_SERVICE_TOKEN is not set"})
+    received = request.headers.get("X-Internal-Service-Token")
+    if not received:
+        return JSONResponse(status_code=401, content={
+            "detail": "Missing X-Internal-Service-Token header"})
+    if not hmac.compare_digest(received, expected):
+        return JSONResponse(status_code=403, content={
+            "detail": "Invalid internal service token"})
+    return await call_next(request)
 
 
 # רישום routes
