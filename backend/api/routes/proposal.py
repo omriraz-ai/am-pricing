@@ -116,15 +116,15 @@ def preview_proposal(project_id: str, db: Session = Depends(get_db)):
     for key, name in phase_map.items():
         months = schedule.get(key, 0)
         if months:
-            schedule_rows += f"<tr><td>{name}</td><td>{months}</td></tr>"
+            schedule_rows += f'<tr><td>{name}</td><td><bdi dir="ltr">{months}</bdi></td></tr>' 
 
     pricing_rows = ""
     for pc in phase_costs:
         pricing_rows += f"""<tr>
             <td>{pc['phase_name']}</td>
-            <td>{pc['months']}</td>
-            <td>{pc['adjusted_rate']:,.0f} ₪</td>
-            <td>{pc['phase_total']:,.0f} ₪</td>
+            <td><bdi dir="ltr">{pc['months']}</bdi></td>
+            <td><bdi dir="ltr">{pc['adjusted_rate']:,.0f}</bdi> ₪</td>
+            <td><bdi dir="ltr">{pc['phase_total']:,.0f}</bdi> ₪</td>
         </tr>"""
 
     status_color = {
@@ -138,7 +138,9 @@ def preview_proposal(project_id: str, db: Session = Depends(get_db)):
 <head>
 <meta charset="UTF-8">
 <style>
-  body {{ font-family: Arial, sans-serif; direction: rtl; padding: 20px; }}
+  body {{ font-family: Arial, sans-serif; direction: rtl; text-align: right; padding: 20px; }}
+  table {{ direction: rtl; }}
+  bdi {{ unicode-bidi: isolate; }}
   h1 {{ color: #1F3864; }}
   h2 {{ color: #2E75B6; border-bottom: 1px solid #ccc; padding-bottom: 5px; }}
   table {{ border-collapse: collapse; width: 100%; margin: 10px 0; }}
