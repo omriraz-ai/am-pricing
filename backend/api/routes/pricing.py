@@ -187,9 +187,13 @@ def calculate(req: CalculateRequest, db: Session = Depends(get_db)):
             if "blended_per_unit" in override:
                 result["blended_per_unit"] = override["blended_per_unit"]
 
-    # שמירת תוצאה בפרויקט
+    # שמירת תוצאה בפרויקט.
+    # סטטוס: חישוב חוזר לעולם אינו מוריד פרויקט מאושר/שמור חזרה ל-calculated —
+    # האישור נשאר בתוקף (הסכום המאושר שמור ב-ApprovalLog ואינו מושפע מחישוב).
+    # רק draft/calculated מתקדמים ל-calculated.
     p.calculation_result = result
-    p.status = "calculated"
+    if p.status not in ("approved", "saved_to_db"):
+        p.status = "calculated"
     db.commit()
 
     return result
