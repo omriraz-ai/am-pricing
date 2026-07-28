@@ -48,6 +48,7 @@ def calculate_schedule(
     phase_keys = ["planning", "excavation", "underground", "above_ground", "finishes", "handover"]
     result = {}
     used_history = False
+    breakdown = {}  # additive transparency: rule/history/manual/final per phase
 
     # בניית מפת פרויקטים דומים עם לוז לפי שם פרויקט
     comparable_names = {c.project_name for c in comparables if c.similarity_score >= 60}
@@ -62,6 +63,11 @@ def calculate_schedule(
 
         if override_timeline and manual_val:
             result[phase_key] = manual_val
+            breakdown[phase_key] = {
+                "tier_rule": SCHEDULE_RULES[phase_key].get(tier, 0),
+                "historical_avg": None, "historical_n": 0,
+                "manual_value": manual_val, "final": manual_val,
+            }
             continue
 
         rule_val = SCHEDULE_RULES[phase_key].get(tier, 0)
@@ -86,6 +92,13 @@ def calculate_schedule(
                 recommended = rule_val
 
         result[phase_key] = max(1, recommended)
+        breakdown[phase_key] = {
+            "tier_rule": rule_val,
+            "historical_avg": round(hist_avg, 1) if hist_values else None,
+            "historical_n": len(hist_values),
+            "manual_value": manual_val if manual_val else None,
+            "final": result[phase_key],
+        }
 
     total_months = sum(result.values())
     source_note = "60% חוקי גודל + 40% בסיס נתונים" if used_history else "חוקי גודל בלבד"
@@ -99,4 +112,5 @@ def calculate_schedule(
         handover=result["handover"],
         total_months=total_months,
         source_note=source_note,
+        breakdown=breakdown,
     )

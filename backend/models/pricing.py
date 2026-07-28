@@ -44,6 +44,15 @@ class ComparableResult(BaseModel):
     score_breakdown: ScoreBreakdown
 
 
+class PhaseScheduleBreakdown(BaseModel):
+    """פירוק שקוף של חישוב הלו"ז לשלב בודד — בסיס להמלצות (additive, אופציונלי)."""
+    tier_rule: int                      # חוק הגודל לשלב לפי ה-Tier
+    historical_avg: Optional[float] = None   # ממוצע פרויקטים דומים (אם קיים)
+    historical_n: int = 0               # כמה פרויקטים דומים תרמו לממוצע
+    manual_value: Optional[int] = None  # הערך הידני שהוזן (אם הוזן)
+    final: int                          # הערך הסופי שנכנס ל-schedule
+
+
 class ScheduleResult(BaseModel):
     """תוצאת חישוב לוח זמנים."""
     planning: int
@@ -54,6 +63,8 @@ class ScheduleResult(BaseModel):
     handover: int
     total_months: int
     source_note: str           # "60% חוקי גודל + 40% בסיס נתונים"
+    # פירוק לכל שלב — אופציונלי (תוצאות ישנות שמורות ללא השדה נשארות תקפות)
+    breakdown: Optional[dict] = None
 
 
 class PricingFlags(BaseModel):
